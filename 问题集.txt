@@ -1,11 +1,30 @@
 1.如何更改作者信息，重新写？
-<<<<<<< HEAD
 感觉我的dev没有clone过来，不知怎么回事
 如何pull request ?
-=======
 2.git rebase是什么，怎么用？
 3.分支的创建，如何与github的分支连接？
 4.如果关联两个不同的远程库，例如我既打算pull到公司内部git，也打算放到github一份,如何做？
 5.这个修改呢？
 在laptop做的修改-----已经传到我的desktop上面。
->>>>>>> dev
+6.做一个测试，看私有git是否有效。
+终于搞定win7下免密码登录公司私有git的事了。下面重点说一下步骤
+1.首先在win7上安装git gui客户端，然后git init 一个新目录，这点不用多说。
+2.打开git bash,执行 ssh-keygen -t rsa,或者执行github的-C语句。 ssh-keygen -t rsa -c "flywangle@hotmail.com"
+以上两步都在客户端执行，这里是win7
+3.目标机，这里是git服务器，首先打开RSA认证。 vim /etc/ssh/sshd_config
+RSAAuthentication yes
+PubkeyAuthentication yes
+将这两行改成yes,或者说取消之前的#
+然后systemctl restart sshd
+4.在/home/git下面新建.ssh目录，将之前客户端上生成的id_ras.pub文件传到这个目录，再执行这条命令。
+ssh git@10.227.64.87 'chmod 700 .ssh && touch .ssh/authorized_keys && chmod 600 .ssh/authorized_keys && cat >> .ssh/authorized_keys' < ~/.ssh/id_rsa.pub
+上面这条语句的意思就是登录ssh，然后设定.ssh目录权限为700，authorized_keys权限为600，再将id_rsa.pub这个文件的内容复制到authorized_keys这个文件上。
+然后提示输入密码，之后就可以不需要密码登录了。
+5.禁用shell登录。 vim /etc/passwd
+git:x:1001:1001:,,,:/home/git:/bin/bash
+
+改为：
+
+git:x:1001:1001:,,,:/home/git:/usr/bin/git-shell
+
+>>>>>>> f9156dd940ccd2de3c69e58bc28d2797def8d90e
