@@ -21,7 +21,7 @@ def cws_restart(path):     #运行shell重启脚本
 def log(file,context):     #log记录函数
     current_time=datetime.now()
     f = open(file,"a+")
-    f.write(str(current_time)+context+'\n')
+    f.write(str(current_time)+str(context)+'\n')
     f.close()
     return
 
@@ -48,23 +48,27 @@ def check_restart(log_file,check_file,port):    #检查是否已经重启过的�
 def check_url(port):               #判断URL是否超时，
     log_file=path1+"cws_"+port+"_status.log"     #日志文件绝对路径
     check_file=path1+port+"_status.txt"       #设置重启标志的文件，如果重启，那么完成后写入重启标志1
-    url="http://123.59.53.69:"+port+"/api/misc/db/test/334834"       #检测URL路径
+    url="http://123.59.43.17:"+port+"/api/misc/db/test/334834"       #检测URL路径
     cws_status = 0
     try:
-        url_status = requests.get(url,timeout=1.002)
+        url_status = requests.get(url,timeout=5.002)
         log(log_file,'服务器检测正常')
         print(url_status.status_code)
-    except ReadTimeout:
-        print('Timeout')
+    except ReadTimeout as f:
+        print('readtime out')
         cws_status = 1       #超时状态标志为1
- 
-    except ConnectionError:
+        log(log_file,context=f)
+        sendmail()
+    except ConnectionError as f:
         print('Connection error')
-        log(log_file,context='Connection error.服务器检测不正常')
-
-    except RequestException:
+        log(log_file,context=f)
+        sendmail()
+    except RequestException as f:
         print('Error')
-        log(log_file,context='Error.服务器检测不正常')
+        log(log_file,context=f)
+        sendmail()
+
+
     if cws_status == 1:           #如果超时，那么进入重启模块
         if __name__=='__main__':
             check_restart(log_file,check_file,port)
@@ -73,17 +77,14 @@ def check_url(port):               #判断URL是否超时，
         sendmail()	
     return 
 
-ports=['9000','9090']
-path1="/data/cyy928/crond/"    #监控程序所在目录
-n=1
+ports=['9000']
+path1="/data/cyy928/crontab/"    #监控程序所在目录
 #url="http://:120.132.50.181:9090/api/misc/db/test/334834"
 #url="http://123.59.53.69:9000/api/misc/db/test/334834"       #检测URL路径
-
-
-while n<10000:
+n = 1
+while n <3 :
     for port in ports:
-	if __name__=='__main__':    
+        if __name__=='__main__':    
 	    check_url(port)
-    time.sleep(60)
-    n=n+1
-	
+    n = n+1
+    time.sleep(19)	
