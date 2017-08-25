@@ -4,33 +4,35 @@
 ' a mail test program'
 __author__ = 'Alex Wang'  
 
+import socket
 import smtplib  
 from email.mime.text import MIMEText  
 from email.header import Header  
 
-def  sendmail():  
+def  sendmail(warning,context):
+        hostname =socket.gethostname()  
 	sender = 'kilner1@163.com'  
 	receiver = 'wxp205@cyy928.com'  
-	subject = 'python email test'  
+	subject = hostname+warning  
 	smtpserver = 'smtp.163.com'  
-	username = 'kilner1@163.com'  
-	password = 'stone1'  
+	username = sender  
+	password = 'stone1' 
 	  
-	msg = MIMEText('你好','text','utf-8')#中文需参数‘utf-8’，单字节字符不需要  
+	msg = MIMEText(context,'plain','utf-8')#中文需参数‘utf-8’，单字节字符不需要  
 	msg['Subject'] = Header(subject, 'utf-8')
         msg['From'] = 'wangle<kilner1@163.com>'
-        msg['To'] = 'wxp205@cyy928.com'
+        msg['To'] = receiver
         #smtp = smtplib.SMTP(smtpserver,25)
 
         #smtp.set_debuglevel(1)  
 	  
 	smtp = smtplib.SMTP()  
-	smtp.connect('smtp.163.com')  
+	smtp.connect(smtpserver)  
 	smtp.login(username, password)  
 	smtp.sendmail(sender, receiver, msg.as_string())  
 	smtp.quit()  
 	return
 
 if __name__=='__main__': 
-    sendmail()
+    sendmail('服务器有异常',context='hello')
 
