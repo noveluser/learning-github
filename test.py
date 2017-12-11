@@ -12,7 +12,6 @@ from email.mime.multipart import MIMEMultipart
 from email.header import Header  
 import requests
 from requests.exceptions import ReadTimeout, ConnectionError, RequestException
-import commands
 import time
 from datetime import datetime
 
@@ -46,11 +45,9 @@ def  sendmail(warning,context,receivers):
 	
 def cws_restart(path):     #运行shell重启脚本
     status=os.system(path+'stop_'+port+'.sh')
-    print "stop"
     time.sleep(1)
     status=os.system(path+'startup_'+port+'.sh')
-    print "start"
-   # status=commands.getstatusoutput(path+'startup_'+port+'.sh')
+    # status=commands.getstatusoutput(path+'startup_'+port+'.sh')
     #print status
     return         #return是标准函数最后一句
 
@@ -79,7 +76,7 @@ def check_restart(log_file,check_file,port):    #检查是否已经重启过的�
 def check_url(port):               #判断URL是否超时，
     log_file=path1+"cws_"+port+"_status.log"     #日志文件绝对路径
     check_file=path1+port+"_status.txt"       #设置重启标志的文件，如果重启，那么完成后写入重启标志1
-    url="http://123.59.53.69:"+port+"/api/misc/db/test/334834"       #检测URL路径
+    url="http://123.59.43.17:"+port+"/api/misc/db/test/334834"       #检测URL路径
     cws_status = 0
     try:
         url_status = requests.get(url,timeout=5.002)
@@ -110,7 +107,7 @@ def check_url(port):               #判断URL是否超时，
 	
 hostname =socket.gethostname() 
 ports=['9000']
-path1="/data/cyy928/crond/"    #监控程序所在目录
+path1="/data/cyy928/crontab/"    #监控程序所在目录
 receiver1='wxp205@cyy928.com'
 receivers='wxgzh@cyy928.com, wxp205@cyy928.com'
 #url="http://:120.132.50.181:9090/api/misc/db/test/334834"
