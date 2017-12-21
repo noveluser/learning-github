@@ -69,6 +69,7 @@ def check_restart(log_file,check_file,port):    #检查是否已经重启过的�
          f2.write('2')
          f2.close()
          log(log_file,'服务器检测不正常，已重启')
+		 sendmail('服务器重启','重启',receivers)
      else:
          log(log_file,'服务器已经在1小时内重启过,无需再重启')
      return
@@ -102,7 +103,7 @@ def check_url(port):               #判断URL是否超时，
             check_restart(log_file,check_file,port)
         t=datetime.now()
 	print(t,cws_status,log_file,check_file)
-        sendmail('服务器重启','重启',receivers)	
+        
     return 
 	
 hostname =socket.gethostname() 
