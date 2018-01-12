@@ -59,10 +59,10 @@ def cws_restart(path):     #运行shell重启脚本
     #print status
     return         #return是标准函数最后一句
 
-def log(file,context):     #log记录函数
+def log(file,context,respondtime):     #log记录函数
     current_time=datetime.now()
     f = open(file,"a+")
-    f.write(str(current_time)+str(context)+'\n')
+    f.write(str(current_time)+str(context)+respondtime+'\n')
     f.close()
     return
 	
@@ -76,10 +76,10 @@ def check_restart(log_file,check_file,port):    #检查是否已经重启过的�
          f2 = open(check_file,"w")
          f2.write('2')
          f2.close()
-         log(log_file,'服务器检测不正常，已重启')
+         log(log_file,'服务器检测不正常','已重启')
  	 sendmail('服务器重启','重启',receivers,1)
      else:
-         log(log_file,'服务器已经在1小时内重启过,无需再重启')
+         log(log_file,'服务器已经在1小时内重启过,','无需再重启')
      return
 	 
 def check_url(port):               #判断URL是否超时，
@@ -87,22 +87,31 @@ def check_url(port):               #判断URL是否超时，
     check_file=path1+port+"_status.txt"       #设置重启标志的文件，如果重启，那么完成后写入重启标志1
     url="http://127.0.0.1:"+port+"/api/misc/db/test/334834"       #检测URL路径
     cws_status = 0
+    start_time=time.time()*1000
     try:
         url_status = requests.get(url,timeout=10.002)
-        log(log_file,'服务器检测正常')
+        end_time=time.time()*1000
+        duration_time=str(end_time-start_time)
+        log(log_file,'服务器检测正常,反应时间为  ',duration_time )
         #sendmail('test','test',receivers,1)
     except ReadTimeout as f:
         print('readtime out')
         cws_status = 1       #超时状态标志为1
-        log(log_file,context=f)
-        sendmail('服务器有异常',str(f),receiver1,0)
+        end_time=time.time()*1000
+        duration_time=str(end_time-start_time)
+        log(log_file,f,'反应时间 '+duration_time)
+        sendmail('服务器有异常',str(f)+'\n'+'反应时间 '+duration_time,receivers,0)
     except ConnectionError as f:
         print('Connection error')
-        log(log_file,context=f)
+        end_time=time.time()*1000
+        duration_time=str(end_time-start_time)
+        log(log_file,f,'反应时间 '+duration_time)
         sendmail('服务器有异常',str(f),receiver1,0)
     except RequestException as f:
         print('Error')
-        log(log_file,context=f)
+        end_time=time.time()*1000
+        duration_time=str(end_time-start_time)
+        log(log_file,f,'反应时间 '+duration_time)
         sendmail('服务器有异常',str(f),receiver1,0)
 
 
@@ -118,11 +127,11 @@ hostname =socket.gethostname()
 ports=['9000']
 path1="/data/cyy928/crontab/"    #监控程序所在目录
 receiver1='wxp205@cyy928.com'
-receivers=' wxp205@cyy928.com,pc338@cyy928.com'
+receivers='044@cyy928.com, wxp205@cyy928.com,pc338@cyy928.com'
 #url="http://:120.132.50.181:9090/api/misc/db/test/334834"
 #url="http://123.59.53.69:9000/api/misc/db/test/334834"       #检测URL路径
 n = 1
-while n <1400 :
+while n <1430 :
     for port in ports:
         if __name__=='__main__':    
 	    check_url(port)
