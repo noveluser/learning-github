@@ -85,18 +85,18 @@ def check_restart(log_file,check_file,port):    #检查是否已经重启过的�
 def check_url(port):               #判断URL是否超时，
     log_file=path1+"cws_"+port+"_status.log"     #日志文件绝对路径
     check_file=path1+port+"_status.txt"       #设置重启标志的文件，如果重启，那么完成后写入重启标志1
-    url="http://127.0.0.1:"+port+"/api/misc/db/test/334834"       #检测URL路径
+    url="http://127.0.0.1:"+port+"/api/dispatch/238848/persons?authToken=176ed33052b1fed902319090b27260baa2066cfe%239076&appID=d18b6732881d7e04e665e3eb761861db03b5f06c&secretKey=98da99443c76c483a48904ac70af7c42&agency-id=1"       #检测URL路径
     cws_status = 0
     start_time=time.time()*1000
     try:
-        url_status = requests.get(url,timeout=10.002)
+        url_status = requests.get(url,timeout=0.002)
         end_time=time.time()*1000
         duration_time=str(end_time-start_time)
         log(log_file,'服务器检测正常,反应时间为  ',duration_time )
         #sendmail('test','test',receivers,1)
     except ReadTimeout as f:
         print('readtime out')
-        cws_status = 1       #超时状态标志为1
+        cws_status = 0       #超时状态标志为1
         end_time=time.time()*1000
         duration_time=str(end_time-start_time)
         log(log_file,f,'反应时间 '+duration_time)
@@ -127,13 +127,13 @@ hostname =socket.gethostname()
 ports=['9000']
 path1="/data/cyy928/crontab/"    #监控程序所在目录
 receiver1='wxp205@cyy928.com'
-receivers='044@cyy928.com, wxp205@cyy928.com,pc338@cyy928.com'
+receivers='044@cyy928.com,wxp205@cyy928.com,pc338@cyy928.com'
 #url="http://:120.132.50.181:9090/api/misc/db/test/334834"
 #url="http://123.59.53.69:9000/api/misc/db/test/334834"       #检测URL路径
 n = 1
-while n <1430 :
+while n <2 :
     for port in ports:
         if __name__=='__main__':    
 	    check_url(port)
     n = n+1
-    time.sleep(60)
+    time.sleep(1)
