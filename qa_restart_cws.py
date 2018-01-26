@@ -17,20 +17,6 @@ from requests.exceptions import ReadTimeout, ConnectionError, RequestException
 import time
 from datetime import datetime
 
-def command_run(command,timeout=10):
-    proc = subprocess.Popen(command,bufsize=0,stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd=cws_path)
-    poll_seconds = .250
-    deadline = time.time() + timeout
-    while time.time() < deadline and proc.poll() == None:
-        time.sleep(poll_seconds)
-    if proc.poll() == None:
-        if float(sys.version[:3]) >= 2.6:
-            proc.terminate()
-
-    stdout,stderr = proc.communicate()
-
-    return stdout,stderr,proc.returncode
-
 
 def  sendmail(warning,context,receivers,attached_flag):        
 	sender = 'flywangle@163.com'  
@@ -62,14 +48,36 @@ def  sendmail(warning,context,receivers,attached_flag):
 	smtp.quit() 
         return
 
+def command_run(command,timeout,path):
+    proc = subprocess.Popen(command,bufsize=0,stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd=path)
+    poll_seconds = .250
+    deadline = time.time() + timeout
+    while time.time() < deadline and proc.poll() == None:
+        time.sleep(poll_seconds)
+    if proc.poll() == None:
+        if float(sys.version[:3]) >= 2.6:
+            proc.terminate()
+
+    stdout,stderr = proc.communicate()
+
+    return stdout,stderr,proc.returncode
 
 
 	
 def cws_restart(path):     #运行shell重启脚本    
-    command_status=command_run('play status > /data/cyy928/qa/logs/play_status.log',timeout=10)
+    if port == '9000':
+                cws_path="/data/cyy928/qa/cws1"
+    #if port == '9090':
+    #            cws_path="/data/cyy928/cws2"
+
+    #if port == '9093':
+    #            cws_path="/data/cyy928/cws3"
+
+    play_status='play status --url http://127.0.0.1:'+port+' > /data/cyy928/qa/logs/play_status.log'
+    command_status=command_run(play_status,10,cws_path)
+    log('/data/cyy928/crond/cws_9000_status.log',str(command_status),'命令输出结果')
     print command_status
     #status=os.system(path+'stop_'+port+'.sh')
-    time.sleep(1)
     #status=os.system(path+'startup_'+port+'.sh')
     # status=commands.getstatusoutput(path+'startup_'+port+'.sh')
     #print status
@@ -94,7 +102,7 @@ def check_restart(log_file,check_file,port):    #检查是否已经重启过的�
          f2.close()
          log(log_file,'服务器检测不正常','已重启')
  	 sendmail('服务器重启','重启',receiver1,1)
-	 subprocess.Popen('echo '' > play_status.log ',bufsize=0,stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd='/data/cyy928/qa/logs/')
+	 #subprocess.Popen('echo '' > play_status.log ',bufsize=0,stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd='/data/cyy928/qa/logs/')
      else:
          log(log_file,'服务器已经在1小时内重启过,','无需再重启')
      return
@@ -102,7 +110,9 @@ def check_restart(log_file,check_file,port):    #检查是否已经重启过的�
 def check_url(port):               #判断URL是否超时，
     log_file=path1+"cws_"+port+"_status.log"     #日志文件绝对路径
     check_file=path1+port+"_status.txt"       #设置重启标志的文件，如果重启，那么完成后写入重启标志1
-    url="http://127.0.0.1:"+port+"/api/dispatch/238848/persons?authToken=176ed33052b1fed902319090b27260baa2066cfe%239076&appID=d18b6732881d7e04e665e3eb761861db03b5f06c&secretKey=98da99443c76c483a48904ac70af7c42&agency-id=1"       #检测URL路径
+    url="http://127.0.0.1:"+port+"/api/misc/db/test/334834"       #检测URL路径
+
+    #url="http://127.0.0.1:"+port+"/api/dispatch/238848/persons?authToken=176ed33052b1fed902319090b27260baa2066cfe%239076&appID=d18b6732881d7e04e665e3eb761861db03b5f06c&secretKey=98da99443c76c483a48904ac70af7c42&agency-id=1"       #检测URL路径
     cws_status = 0
     start_time=time.time()*1000
     try:
@@ -142,7 +152,6 @@ def check_url(port):               #判断URL是否超时，
 hostname =socket.gethostname() 
 ports=['9000']
 path1="/data/cyy928/crond/"    #监控程序所在目录
-cws_path="/data/cyy928/qa/cws1/"     #cws节点目录
 receiver1='wxp205@cyy928.com'
 receivers='044@cyy928.com,wxp205@cyy928.com,pc338@cyy928.com'
 #url="http://:120.132.50.181:9090/api/misc/db/test/334834"
