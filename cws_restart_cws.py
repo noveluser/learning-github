@@ -100,7 +100,7 @@ def search_keyword(file):              #搜索关键词
                     #a.extend([x.strip().split()[0], lines.index(x),])
                     active_count_result = x.split(':')[1]       #还要考虑active搜索不到，文件为空的情况
                 else :
- 		    restart_status=True     #play_status.log文件找不到active count,状态文件未能输出，那么也重启
+ 		    #restart_status=True     #play_status.log文件找不到active count,状态文件未能输出，那么也重启
 		if int(active_count_result) > 150:
                     restart_status=True     #active count结果大于180
 	    	    #print ('active count is %s' % active_count_result)
@@ -194,6 +194,7 @@ def check_url(port):               #判断URL是否超时，
 	    command_status=command_run(play_status,10,cws_path)
 	    log(path1+'cws_'+port+'_status.log',str(command_status),'命令输出结果')
 	    restart_status=search_keyword('/data/cyy928/logs/play_status.log')
+		log(path1+'cws_'+port+'_status.log',str(restart_status),'重启状态标识')
     if restart_status :           #如果active count>150,那么进入重启模块
 	    check_restart(log_file,check_file,port)
     t=datetime.now()
