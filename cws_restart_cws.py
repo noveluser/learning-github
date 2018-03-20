@@ -19,19 +19,19 @@ from datetime import datetime
 
 
 def  sendmail(warning,context,receivers,attached_flag):        #发送邮件模块
-	sender = 'flywangle@163.com'  
+	sender = 'wxgzh@cyy928.com'  
 	receivers = receivers  
 	subject = hostname+warning  
-	smtpserver = 'smtp.163.com'  
+	smtpserver = 'smtp.cyy928.com'  
 	username = sender  
-	password = 'stone1'
+	password = 'Password1'
         attached_flag = int(attached_flag)
 	context=hostname+"  "+str(datetime.now())+"  "+context
 	  
 	#msg = MIMEText(context,'plain','utf-8')#中文需参数‘utf-8’，单字节字符不需要  
 	msg = MIMEMultipart()
 	msg['Subject'] = Header(subject, 'utf-8')
-        msg['From'] = 'wangle<flywangle@163.com>'
+        msg['From'] = 'cws监控<wxgzh@cyy928.com>'
         msg['To'] = receivers
 	puretext = MIMEText(context)
 	msg.attach(puretext) 
@@ -41,7 +41,8 @@ def  sendmail(warning,context,receivers,attached_flag):        #发送邮件模�
 		part.add_header('Content-Disposition', 'attachment', filename="play_status.log")
 		msg.attach(part)  
 		play_status_file.close()
-	smtp = smtplib.SMTP()  
+	#smtp = smtplib.SMTP()
+	smtp = smtplib.SMTP_SSL(smtpserver, 465) 	
 	smtp.connect(smtpserver)  
 	smtp.login(username, password)  
 	smtp.sendmail(sender, receivers.split(','), msg.as_string())  
@@ -99,7 +100,7 @@ def search_keyword(file):              #搜索关键词
                 if x.startswith('Active count'):
                     #a.extend([x.strip().split()[0], lines.index(x),])
                     active_count_result = x.split(':')[1]       #还要考虑active搜索不到，文件为空的情况
-                else :
+                #else :
  		    #restart_status=True     #play_status.log文件找不到active count,状态文件未能输出，那么也重启
 		if int(active_count_result) > 150:
                     restart_status=True     #active count结果大于180
@@ -170,7 +171,7 @@ def check_url(port):               #判断URL是否超时，
               end_time=time.time()*1000
               duration_time=str(end_time-start_time)
               log(log_file,f,'API readtimeout反应时间 '+duration_time)
-              sendmail('API服务有异常',str(f)+'\n'+'反应时间 '+duration_time,receivers,0)
+              sendmail('API服务有异常',str(f)+'\n'+'反应时间 '+duration_time,receiver1,0)
           except ConnectionError as f:
               #cws_status2 = 1       #超时状态标志为1
               print('Connection error')
@@ -185,7 +186,7 @@ def check_url(port):               #判断URL是否超时，
               log(log_file,f,'API Exception反应时间 '+duration_time)
               sendmail('API服务器有异常',str(f),receiver1,0)
           count=count+1
-          time.sleep(20)
+          time.sleep(10)
     restart_status=False
     #cws_status =2    #测试语句
     if cws_status == 2:           #如果连续超时，那么进入active检测模块
@@ -194,7 +195,7 @@ def check_url(port):               #判断URL是否超时，
 	    command_status=command_run(play_status,10,cws_path)
 	    log(path1+'cws_'+port+'_status.log',str(command_status),'命令输出结果')
 	    restart_status=search_keyword('/data/cyy928/logs/play_status.log')
-		log(path1+'cws_'+port+'_status.log',str(restart_status),'重启状态标识')
+	    log(path1+'cws_'+port+'_status.log',str(restart_status),'重启状态标识')
     if restart_status :           #如果active count>150,那么进入重启模块
 	    check_restart(log_file,check_file,port)
     t=datetime.now()
@@ -203,15 +204,15 @@ def check_url(port):               #判断URL是否超时，
     return
 	
 hostname =socket.gethostname() 
-#ports=['9000']
+#ports=['9090']
 ports=['9000','9090','9093']
 path1="/data/cyy928/crontab/"    #监控程序所在目录
 receiver1='wxp205@cyy928.com'
-receivers='044@cyy928.com,wxp205@cyy928.com,pc338@cyy928.com'
-#url="http://:120.132.50.181:9090/api/misc/db/test/334834"
-#url="http://123.59.53.69:9000/api/misc/db/test/334834"       #检测URL路径
+#receivers='wxp205@cyy928.com'
+receivers='044@cyy928.com,wxp205@cyy928.com'
+
 n = 1
-while n <1430 :
+while n <1370 :
     for port in ports:
         if __name__=='__main__':    
 	    check_url(port)
