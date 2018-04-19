@@ -1,0 +1,20 @@
+# 从一个基础镜像centos:6.8开始构建
+FROM centos:6
+# 维护者信息
+MAINTAINER from cyy by  "wxp205@cyy928.com"
+#复制配置文件到相应位置
+RUN yum install -y openssh-server
+RUN mkdir /var/run/sshd
+RUN echo 'root:root' |chpasswd
+
+# 下面这两句比较特殊，在centos6上必须要有，否则创建出来的容器sshd不能登录  
+RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key  
+RUN ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key 
+
+# 定义环境变量
+
+# 暴露22端口
+
+EXPOSE 22
+#设置自启动命令
+CMD    ["/usr/sbin/sshd", "-D"]

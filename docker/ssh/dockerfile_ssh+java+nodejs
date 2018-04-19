@@ -1,0 +1,18 @@
+# 从一个基础镜像centos:6.8开始构建
+FROM noveluser/centos6:java
+# 维护者信息
+MAINTAINER from cyy by  "wxp205@cyy928.com"
+#添加配置
+RUN curl -sL https://rpm.nodesource.com/setup_6.x | bash -
+RUN yum install -y gcc-c++ make
+RUN yum install -y nodejs
+RUN yum install subversion -y
+RUN mkdir -p /data/cyy928/paking-folder
+RUN npm install -g gulp
+
+# 定义环境变量
+
+
+# 暴露端口
+
+#设置自启动命令
