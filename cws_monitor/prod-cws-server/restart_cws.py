@@ -101,7 +101,8 @@ def search_keyword(file):              #搜索关键词
                     #a.extend([x.strip().split()[0], lines.index(x),])
                     active_count_result = x.split(':')[1]       #还要考虑active搜索不到，文件为空的情况
                 #else :
- 		    #restart_status=True     #play_status.log文件找不到active count,状态文件未能输出，那么也重启
+                    #restart_status=True     #play_status.log文件找不到active count,状态文件未能输出，那么也重启
+                                            #这条语句有一些问题，结果是restart_status一直为True,因为这里是个for循环，总会碰到某行搜索不到的情况
 		if int(active_count_result) > 150:
                     restart_status=True     #active count结果大于180
 	    	    #print ('active count is %s' % active_count_result)
@@ -192,8 +193,7 @@ def check_url(port):               #判断URL是否超时，
     if cws_status == 2:           #如果连续超时，那么进入active检测模块
             cws_path=locate_cws_path(port)
 	    play_status='/data/package/play-1.4.2/play status --url http://127.0.0.1:'+port+' > /data/cyy928/logs/play_status.log'
-	    command_status=command_run(play_status,10,cws_path)
-	    log(path1+'cws_'+port+'_status.log',str(command_status),'命令输出结果')
+	    subprocess.Popen(play_status,bufsize=0,stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,cwd=cws_path)
 	    restart_status=search_keyword('/data/cyy928/logs/play_status.log')
 	    log(path1+'cws_'+port+'_status.log',str(restart_status),'重启状态标识')
     if restart_status :           #如果active count>150,那么进入重启模块

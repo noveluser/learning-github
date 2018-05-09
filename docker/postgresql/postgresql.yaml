@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+   name: some-postgresql
+spec:
+   replicas: 1
+   template:
+     metadata:
+       labels:
+          app: some-postgresql
+     spec:
+        containers:
+          - name:  some-postgresql
+            image: postgres:9.3
+            imagePullPolicy: IfNotPresent
+            ports:
+              - name: port
+                containerPort: 5432
+            env:
+              - name: POSTGRES_USER
+                value: "cyyuser"
+              - name: POSTGRES_PASSWORD
+                value: "cyypassword"
+            volumeMounts:
+              - name: postgresql-storage
+                mountPath: /var/lib/postgresql/data
+        volumes:
+           - name: postgresql-storage
+             hostPath:
+               path: /data/k8s_storage/postgresql/data
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: NodePort
+  selector:
+    app: some-postgresql
+  ports:
+    - name: port
+      port: 5432   
+
+

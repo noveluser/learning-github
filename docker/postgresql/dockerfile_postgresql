@@ -1,0 +1,47 @@
+# postgresql 9 on centos 6.5
+#
+# docker build -t 'your/pg' <thisfile>
+#
+# then run with:
+# docker run -P -d your/pg
+# tweakables are the 'ENV' lines further down
+# (if they were higher up they'd blow the cache)
+
+FROM centos:centos6
+MAINTAINER Dick Davies <dick@hellooperator.net>
+
+# TODO: fix locale! not allowing UTF-8 and think it's this 'minimal' image
+
+# add postgresql.org repo
+RUN yum -y update; yum clean all
+RUN yum -y install epel-release; yum clean all
+RUN yum install -y https://download.postgresql.org/pub/repos/yum/9.3/redhat/rhel-6-x86_64/pgdg-centos93-9.3-3.noarch.rpm; yum clean all
+# install postgres rpms
+RUN yum install -y postgresql93-server postgresql93-contrib; yum clean all
+
+# NB: transient! might want to map volumes, etc.
+ENV PGDATA /data/database
+
+# initialize
+RUN mkdir -p $PGDATA
+RUN chown postgres $PGDATA
+RUN su -c - postgres /usr/pgsql-9.3/bin/initdb
+
+# open up tcp access
+RUN echo "host all all 0.0.0.0/0 md5" > $PGDATA/pg_hba.conf
+# needed to createuser below
+RUN echo "local all postgres trust" >> $PGDATA/pg_hba.conf
+RUN sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" $PGDATA/postgresql.conf
+
+# superuser account
+ENV SUPERUSER cyyuser
+ENV SUPERPASS cyypassword
+
+# fire up db, create superuser, shut down
+RUN su -c - postgres "/usr/pgsql-9.3/bin/pg_ctl -w start && echo create role $SUPERUSER SUPERUSER LOGIN PASSWORD \'$SUPERPASS\' | psql && /usr/pgsql-9.3/bin/pg_ctl -w stop"
+
+EXPOSE 5432
+
+USER postgres
+# listen on network, log to stdout
+ENTRYPOINT ["/usr/pgsql-9.3/bin/postgres", "-i", "-c", "logging_collector=off"]
