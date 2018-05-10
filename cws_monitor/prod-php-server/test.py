@@ -49,7 +49,7 @@ def  sendmail(warning,context,receivers,attached_flag):
         return
 
 def kill_process(key):
-    log_file='/data/cyy928/crontab/cws_9003_status.log'     #日志文件绝对路径
+    log_file=path1+"cws_"+port+"_status.log"     #日志文件绝对路径
     lines = os.popen('ps -ef|grep '+key) 
     for line in lines:       
         if line.find('grep '+key)!=-1: continue
@@ -61,10 +61,9 @@ def kill_process(key):
         out = os.system('kill '+pid)
         if out==0:
             log(log_file,'success! kill '+pid+'  ',proc)
-            #log(log_file,'服务器检测不正常','已重启')
         else:
             log(log_file,'failed! kill '+pid+'  ',proc)
-    return
+
 
 def locate_cws_path(port):
     if port == '9003':
@@ -73,12 +72,15 @@ def locate_cws_path(port):
 
 	
 def cws_restart(path):     #运行shell重启脚本    
-       	#status=os.system(path+'stop_'+port+'.sh')
+       	status=os.system(path+'stop_'+port+'.sh')
+        kill_process('cwsserver')
     	time.sleep(1)
-        kill_process('pingan')
-    	#status=os.system(path+'startup_'+port+'.sh')
-    	# status=commands.getstatusoutput(path+'startup_'+port+'.sh')
-    	#print status
+    	status=os.system(path+'startup_'+port+'.sh')
+        time.sleep(5)
+        status=os.system(path+'stop_'+port+'.sh')
+    	time.sleep(1)
+    	status=os.system(path+'startup_'+port+'.sh')
+
     	return         #return是标准函数最后一句
 
 
@@ -155,11 +157,11 @@ def check_url(port):               #判断URL是否超时，
     check_file=path1+port+"_status.txt"       #设置重启标志的文件，如果重启，那么完成后写入重启标志1
     count=1
     cws_status = 0
-    api_url="http://127.0.0.1:"+port+"/api/dispdatch/238848/persons?authToken=176ed33052b1fed902319090b27260baa2066cfe%239076&appID=d18b6732881d7e04e665e3eb761861db03b5f06c&secretKey=98da99443c76c483a48904ac70af7c42&agency-id=1"       #检测URL路径
+    api_url="http://127.0.0.1:"+port+"/api/dispatch/896260/persons?authToken=176ed33052b1fed902319090b27260baa2066cfe%239076&appID=d18b6732881d7e04e665e3eb761861db03b5f06c&secretKey=98da99443c76c483a48904ac70af7c42&agency-id=1"       #检测URL路径
     while count <3 : 
           try:
               start_time=time.time()*1000
-	      url_status = requests.get(api_url,timeout=2.002)
+	      url_status = requests.get(api_url,timeout=5.002)
               end_time=time.time()*1000
               duration_time=str(end_time-start_time)
               log(log_file,'report服务检测正常,反应时间为  ',duration_time )
@@ -185,9 +187,9 @@ def check_url(port):               #判断URL是否超时，
               log(log_file,f,'API Exception反应时间 '+duration_time)
               sendmail('API服务器有异常',str(f),receiver1,0)
           count=count+1
-          time.sleep(2)
+          time.sleep(20)
     restart_status=False
-    cws_status =2    #测试语句
+    #cws_status =2    #测试语句
     if cws_status == 2:           #如果连续超时，那么进入active检测模块
             cws_path=locate_cws_path(port)
             play_status='/data/package/play-1.4.2/play status --url http://127.0.0.1:'+port+' > /data/cyy928/logs/play_status.log'
@@ -205,15 +207,14 @@ hostname =socket.gethostname()
 ports=['9003']
 path1="/data/cyy928/crontab/"    #监控程序所在目录
 receiver1='wxp205@cyy928.com'
-receivers='wxp205@cyy928.com'
-#receivers='044@cyy928.com,wxp205@cyy928.com'
-#url="http://:120.132.50.181:9090/api/misc/db/test/334834"
-#url="http://123.59.53.69:9000/api/misc/db/test/334834"       #检测URL路径
+#receivers='wxp205@cyy928.com'
+receivers='044@cyy928.com,wxp205@cyy928.com'
+
 n = 1
-while n <2 :
+while n <720 :
     for port in ports:
         if __name__=='__main__':    
 	    check_url(port)
     n = n+1
     log(path1+'2.txt','命令输出结果',str(n))
-    time.sleep(2)
+    time.sleep(20)
